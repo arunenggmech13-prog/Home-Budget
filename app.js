@@ -22,6 +22,8 @@ function saveData() {
 function getDefaultData() {
   return {
     transactions: [],
+    creditCards: [],
+    personalLoans: [],
     categories: {
       income: [
         { id: 'i1', name: 'Salary', emoji: '💼' },
@@ -288,45 +290,117 @@ document.querySelectorAll('.filter-chip').forEach(chip => {
 });
 
 // ───────────────────────────────────────────────────
-//  CATEGORIES
+//  CREDIT CARDS & PERSONAL LOANS
 // ───────────────────────────────────────────────────
-function renderCategories() {
-  renderCatList('income');
-  renderCatList('expense');
+function renderCreditCardsAndLoans() {
+  renderCreditCards();
+  renderPersonalLoans();
 }
 
-function renderCatList(type) {
-  const container = document.getElementById(type === 'income' ? 'incomeCatList' : 'expenseCatList');
+function renderCreditCards() {
+  const container = document.getElementById('creditCardList');
+  const emptyEl = document.getElementById('emptyCards');
   container.innerHTML = '';
-  const cats = state.categories[type];
-  const txs = state.transactions;
 
-  cats.forEach(cat => {
-    const count = txs.filter(t => t.categoryId === cat.id).length;
+  if (!state.creditCards.length) {
+    emptyEl.classList.add('visible');
+    return;
+  }
+  emptyEl.classList.remove('visible');
+
+  state.creditCards.forEach(card => {
+    const pct = (card.due / card.limit) * 100;
     const item = document.createElement('div');
-    item.className = 'cat-item';
+    item.className = 'credit-card-item';
     item.innerHTML = `
-      <span class="cat-emoji">${cat.emoji}</span>
-      <span class="cat-name">${cat.name}</span>
-      <span class="cat-count">${count} tx</span>
-      <button class="cat-delete" data-id="${cat.id}" data-type="${type}" aria-label="Delete category">✕</button>
+      <div class="credit-card-header">
+        <h4>💳 ${card.name}</h4>
+        <button class="cc-delete" data-id="${card.id}" aria-label="Delete credit card">✕</button>
+      </div>
+      <div class="credit-card-details">
+        <div class="cc-detail-row">
+          <span class="cc-label">Limit</span>
+          <span class="cc-value credit">${fmt(card.limit)}</span>
+        </div>
+        <div class="cc-detail-row">
+          <span class="cc-label">Due</span>
+          <span class="cc-value">${fmt(card.due)}</span>
+        </div>
+        <div class="cc-detail-row">
+          <span class="cc-label">Available</span>
+          <span class="cc-value credit">${fmt(card.limit - card.due)}</span>
+        </div>
+      </div>
+      <div class="cc-progress">
+        <div class="cc-progress-bar" style="width: ${Math.min(pct, 100)}%"></div>
+      </div>
     `;
     container.appendChild(item);
   });
 
-  container.querySelectorAll('.cat-delete').forEach(btn => {
+  container.querySelectorAll('.cc-delete').forEach(btn => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.id;
-      const t = btn.dataset.type;
-      const inUse = state.transactions.some(tx => tx.categoryId === id);
-      if (inUse) {
-        showToast('Cannot delete — category in use');
-        return;
-      }
-      state.categories[t] = state.categories[t].filter(c => c.id !== id);
+      state.creditCards = state.creditCards.filter(c => c.id !== id);
       saveData();
-      renderCategories();
-      showToast('Category removed');
+      renderCreditCardsAndLoans();
+      showToast('Credit card removed');
+    });
+  });
+}
+
+function renderPersonalLoans() {
+  const container = document.getElementById('personalLoanList');
+  const emptyEl = document.getElementById('emptyLoans');
+  container.innerHTML = '';
+
+  if (!state.personalLoans.length) {
+    emptyEl.classList.add('visible');
+    return;
+  }
+  emptyEl.classList.remove('visible');
+
+  state.personalLoans.forEach(loan => {
+    const pct = (loan.due / loan.total) * 100;
+    const item = document.createElement('div');
+    item.className = 'credit-card-item loan';
+    item.innerHTML = `
+      <div class="credit-card-header">
+        <h4>📋 ${loan.name}</h4>
+        <button class="cc-delete" data-id="${loan.id}" aria-label="Delete personal loan">✕</button>
+      </div>
+      <div class="credit-card-details">
+        <div class="cc-detail-row">
+          <span class="cc-label">Total Loan</span>
+          <span class="cc-value loan">${fmt(loan.total)}</span>
+        </div>
+        <div class="cc-detail-row">
+          <span class="cc-label">Outstanding</span>
+          <span class="cc-value">${fmt(loan.due)}</span>
+        </div>
+        <div class="cc-detail-row">
+          <span class="cc-label">Paid</span>
+          <span class="cc-value loan">${fmt(loan.total - loan.due)}</span>
+        </div>
+        <div class="cc-detail-row">
+          <span class="cc-label">Interest Rate</span>
+          <span class="cc-value loan">${loan.rate}%</span>
+        </div>
+      </div>
+      <div class="cc-progress">
+        <div class="cc-progress-bar loan" style="width: ${Math.min(pct, 100)}%"></div>
+      </div>
+    `;
+    container.appendChild(item);
+  });
+
+  container.querySelectorAll('.cc-delete').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      state.personalLoans = state.personalLoans.filter(l => l.id !== id);
+      saveData();
+      renderCreditCardsAndLoans();
+      showToast('Personal loan removed');
     });
   });
 }
@@ -691,8 +765,8 @@ function refresh() {
     renderDashboardCharts();
   } else if (currentTab === 'transactions') {
     renderAllTransactions();
-  } else if (currentTab === 'categories') {
-    renderCategories();
+  } else if (currentTab === 'credits') {
+    renderCreditCardsAndLoans();
   } else if (currentTab === 'charts') {
     renderChartTab();
   }
@@ -772,6 +846,21 @@ document.getElementById('saveTransaction').addEventListener('click', () => {
 
   const tx = { id: uid(), type: currentType, amount, date, categoryId, note };
   state.transactions.push(tx);
+
+  // Auto-adjust credit cards and personal loans
+  const creditCardId = document.getElementById('txCreditCard').value;
+  const personalLoanId = document.getElementById('txPersonalLoan').value;
+
+  if (currentType === 'expense' && creditCardId) {
+    const card = state.creditCards.find(c => c.id === creditCardId);
+    if (card) card.due += amount;
+  }
+
+  if (currentType === 'expense' && personalLoanId) {
+    const loan = state.personalLoans.find(l => l.id === personalLoanId);
+    if (loan) loan.due += amount;
+  }
+
   saveData();
   closeAddModal();
   refresh();
@@ -779,64 +868,76 @@ document.getElementById('saveTransaction').addEventListener('click', () => {
 });
 
 // ───────────────────────────────────────────────────
-//  ADD CATEGORY MODAL
+//  CREDIT CARD MODAL
 // ───────────────────────────────────────────────────
-const EMOJIS = [
-  '🍔','🍕','🍣','☕','🛒','🏠','🚗','🛵','🚌','✈️','💡','💧','📱','💻',
-  '👕','👟','🛍️','🎬','🎮','🎵','📚','🏥','💊','🏋️','🏦','💰','💼','📈',
-  '🏡','🌿','🎁','🍼','🐶','🐱','🌟','⚡','🔧','🎯','🏆','❤️','🙏','💸',
-  '📦','🎓','🛁','🍷','🎂','🚀','📦','🌍','🍀','🦷'
-];
-
-function openCatModal(type) {
-  addingCatType = type;
-  document.getElementById('catModalTitle').textContent = `Add ${type === 'income' ? 'Income' : 'Expense'} Category`;
-  document.getElementById('catName').value = '';
-  selectedEmoji = type === 'income' ? '💰' : '📦';
-  buildEmojiPicker();
-  document.getElementById('catModal').classList.add('open');
-  document.getElementById('catName').focus();
-}
-
-function closeCatModal() {
-  document.getElementById('catModal').classList.remove('open');
-}
-
-function buildEmojiPicker() {
-  const picker = document.getElementById('emojiPicker');
-  picker.innerHTML = '';
-  EMOJIS.forEach(em => {
-    const btn = document.createElement('button');
-    btn.className = 'emoji-btn' + (em === selectedEmoji ? ' selected' : '');
-    btn.textContent = em;
-    btn.type = 'button';
-    btn.addEventListener('click', () => {
-      selectedEmoji = em;
-      picker.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-    });
-    picker.appendChild(btn);
-  });
-}
-
-document.getElementById('addIncomeCategory').addEventListener('click', () => openCatModal('income'));
-document.getElementById('addExpenseCategory').addEventListener('click', () => openCatModal('expense'));
-document.getElementById('cancelCatModal').addEventListener('click', closeCatModal);
-document.getElementById('catModal').addEventListener('click', (e) => {
-  if (e.target === e.currentTarget) closeCatModal();
+document.getElementById('addCreditCard').addEventListener('click', () => {
+  document.getElementById('ccName').value = '';
+  document.getElementById('ccLimit').value = '';
+  document.getElementById('ccDue').value = '';
+  document.getElementById('creditCardModal').classList.add('open');
+  document.getElementById('ccName').focus();
 });
 
-document.getElementById('saveCatModal').addEventListener('click', () => {
-  const name = document.getElementById('catName').value.trim();
-  if (!name) { showToast('Enter a category name'); return; }
-  const exists = state.categories[addingCatType].some(c => c.name.toLowerCase() === name.toLowerCase());
-  if (exists) { showToast('Category already exists'); return; }
+document.getElementById('cancelCCModal').addEventListener('click', () => {
+  document.getElementById('creditCardModal').classList.remove('open');
+});
 
-  state.categories[addingCatType].push({ id: uid(), name, emoji: selectedEmoji });
+document.getElementById('creditCardModal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) document.getElementById('creditCardModal').classList.remove('open');
+});
+
+document.getElementById('saveCreditCard').addEventListener('click', () => {
+  const name = document.getElementById('ccName').value.trim();
+  const limit = parseFloat(document.getElementById('ccLimit').value);
+  const due = parseFloat(document.getElementById('ccDue').value);
+
+  if (!name) { showToast('Enter card name'); return; }
+  if (!limit || limit <= 0) { showToast('Enter valid credit limit'); return; }
+  if (!due || due < 0) { showToast('Enter valid due amount'); return; }
+
+  state.creditCards.push({ id: uid(), name, limit, due });
   saveData();
-  closeCatModal();
-  renderCategories();
-  showToast(`Category "${name}" added!`);
+  document.getElementById('creditCardModal').classList.remove('open');
+  refresh();
+  showToast(`Credit card "${name}" added!`);
+});
+
+// ───────────────────────────────────────────────────
+//  PERSONAL LOAN MODAL
+// ───────────────────────────────────────────────────
+document.getElementById('addPersonalLoan').addEventListener('click', () => {
+  document.getElementById('plName').value = '';
+  document.getElementById('plTotal').value = '';
+  document.getElementById('plDue').value = '';
+  document.getElementById('plRate').value = '';
+  document.getElementById('personalLoanModal').classList.add('open');
+  document.getElementById('plName').focus();
+});
+
+document.getElementById('cancelPLModal').addEventListener('click', () => {
+  document.getElementById('personalLoanModal').classList.remove('open');
+});
+
+document.getElementById('personalLoanModal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) document.getElementById('personalLoanModal').classList.remove('open');
+});
+
+document.getElementById('savePersonalLoan').addEventListener('click', () => {
+  const name = document.getElementById('plName').value.trim();
+  const total = parseFloat(document.getElementById('plTotal').value);
+  const due = parseFloat(document.getElementById('plDue').value);
+  const rate = parseFloat(document.getElementById('plRate').value);
+
+  if (!name) { showToast('Enter loan name'); return; }
+  if (!total || total <= 0) { showToast('Enter valid loan amount'); return; }
+  if (!due || due < 0) { showToast('Enter valid outstanding amount'); return; }
+  if (rate === undefined || rate < 0) { showToast('Enter valid interest rate'); return; }
+
+  state.personalLoans.push({ id: uid(), name, total, due, rate });
+  saveData();
+  document.getElementById('personalLoanModal').classList.remove('open');
+  refresh();
+  showToast(`Personal loan "${name}" added!`);
 });
 
 // ───────────────────────────────────────────────────
@@ -844,14 +945,13 @@ document.getElementById('saveCatModal').addEventListener('click', () => {
 // ───────────────────────────────────────────────────
 function exportToExcel() {
   const txs = getMonthTransactions().sort((a, b) => a.date.localeCompare(b.date));
-  const label = monthName(viewDate);  // e.g. "June 2026"
+  const label = monthName(viewDate);
 
   if (!txs.length) {
     showToast('No transactions to export for this month');
     return;
   }
 
-  // ── Build rows ──────────────────────────────────
   const header = ['Date', 'Day', 'Type', 'Category', 'Amount (₹)', 'Note'];
 
   const rows = txs.map(tx => {
@@ -867,7 +967,6 @@ function exportToExcel() {
     ];
   });
 
-  // ── Summary block ───────────────────────────────
   const income  = txs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
   const expense = txs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
   const balance = income - expense;
@@ -880,21 +979,18 @@ function exportToExcel() {
     ['Balance',       '', '', '', balance,  ''],
   ];
 
-  // ── Assemble worksheet data ─────────────────────
   const wsData = [header, ...rows, ...summaryRows];
   const ws = XLSX.utils.aoa_to_sheet(wsData);
 
-  // Column widths
   ws['!cols'] = [
-    { wch: 12 }, // Date
-    { wch: 12 }, // Day
-    { wch: 10 }, // Type
-    { wch: 22 }, // Category
-    { wch: 14 }, // Amount
-    { wch: 36 }, // Note
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 10 },
+    { wch: 22 },
+    { wch: 14 },
+    { wch: 36 },
   ];
 
-  // Style header row bold (SheetJS CE supports cell metadata)
   const range = XLSX.utils.decode_range(ws['!ref']);
   for (let C = range.s.c; C <= range.e.c; C++) {
     const cell = ws[XLSX.utils.encode_cell({ r: 0, c: C })];
@@ -903,11 +999,10 @@ function exportToExcel() {
     }
   }
 
-  // ── Build workbook & download ───────────────────
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, label.replace(/[/\\?*\[\]]/g, '_'));
 
-  const safeLabel = label.replace(/\s+/g, '_'); // e.g. June_2026
+  const safeLabel = label.replace(/\s+/g, '_');
   XLSX.writeFile(wb, `HomeBudget_${safeLabel}.xlsx`);
   showToast(`Exported ${txs.length} transactions ✓`);
 }
