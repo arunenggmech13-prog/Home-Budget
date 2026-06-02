@@ -69,15 +69,15 @@
         <span>Dashboard</span>
       </button>
       <button class="nav-btn" id="navTransactions" data-tab="transactions" aria-label="Transactions">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
         <span>Transactions</span>
       </button>
       <button class="nav-btn add-btn" id="navAdd" aria-label="Add Transaction">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
-      <button class="nav-btn" id="navCategories" data-tab="categories" aria-label="Categories">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h8m-8 6h6"/><circle cx="18" cy="18" r="3"/><path d="M18 15v3"/><path d="M15 18h3"/></svg>
-        <span>Categories</span>
+      <button class="nav-btn" id="navCredits" data-tab="credits" aria-label="Credit Cards & Loans">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/></svg>
+        <span>Credits</span>
       </button>
       <button class="nav-btn" id="navCharts" data-tab="charts" aria-label="Charts">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
@@ -142,7 +142,7 @@
           <span class="subtitle" id="txMonthLabel">June 2026</span>
         </div>
         <button class="export-btn" id="exportExcel" aria-label="Export to Excel">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           Export
         </button>
       </div>
@@ -158,26 +158,36 @@
       </div>
     </main>
 
-    <!-- Tab: Categories -->
-    <main class="tab-content" id="tabCategories">
+    <!-- Tab: Credit Cards & Loans -->
+    <main class="tab-content" id="tabCredits">
       <div class="section-title">
-        <h1>Categories</h1>
+        <h1>Credit Cards & Loans</h1>
       </div>
 
-      <div class="categories-group">
-        <div class="cat-group-header">
-          <span>💚 Income Categories</span>
-          <button class="add-cat-btn" id="addIncomeCategory" aria-label="Add income category">+ Add</button>
+      <!-- Credit Cards Section -->
+      <div class="credits-section">
+        <div class="section-header-row">
+          <h3>💳 Credit Cards</h3>
+          <button class="add-cat-btn" id="addCreditCard" aria-label="Add credit card">+ Add</button>
         </div>
-        <div id="incomeCatList" class="cat-list"></div>
+        <div id="creditCardList" class="credit-card-list"></div>
+        <div class="empty-state" id="emptyCards">
+          <div class="empty-icon">💳</div>
+          <p>No credit cards yet.</p>
+        </div>
       </div>
 
-      <div class="categories-group">
-        <div class="cat-group-header">
-          <span>❤️ Expense Categories</span>
-          <button class="add-cat-btn" id="addExpenseCategory" aria-label="Add expense category">+ Add</button>
+      <!-- Personal Loans Section -->
+      <div class="credits-section">
+        <div class="section-header-row">
+          <h3>📋 Personal Loans</h3>
+          <button class="add-cat-btn" id="addPersonalLoan" aria-label="Add personal loan">+ Add</button>
         </div>
-        <div id="expenseCatList" class="cat-list"></div>
+        <div id="personalLoanList" class="credit-card-list"></div>
+        <div class="empty-state" id="emptyLoans">
+          <div class="empty-icon">📋</div>
+          <p>No personal loans yet.</p>
+        </div>
       </div>
     </main>
 
@@ -245,6 +255,20 @@
         </select>
       </div>
 
+      <div class="form-group" id="creditCardGroup" style="display:none;">
+        <label for="txCreditCard">Pay from Credit Card</label>
+        <select id="txCreditCard">
+          <option value="">None</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="personalLoanGroup" style="display:none;">
+        <label for="txPersonalLoan">Pay from Personal Loan</label>
+        <select id="txPersonalLoan">
+          <option value="">None</option>
+        </select>
+      </div>
+
       <div class="form-group">
         <label for="txNote">
           Note <span class="label-optional">(optional)</span>
@@ -260,22 +284,54 @@
     </div>
   </div>
 
-  <!-- Add Category Modal -->
-  <div class="modal-overlay" id="catModal" aria-modal="true" role="dialog" aria-label="Add Category">
+  <!-- Add Credit Card Modal -->
+  <div class="modal-overlay" id="creditCardModal" aria-modal="true" role="dialog" aria-label="Add Credit Card">
     <div class="modal-sheet modal-sheet-sm">
       <div class="modal-handle"></div>
-      <h2 class="modal-title" id="catModalTitle">Add Category</h2>
+      <h2 class="modal-title">Add Credit Card</h2>
       <div class="form-group">
-        <label for="catName">Category Name</label>
-        <input type="text" id="catName" placeholder="e.g. Groceries" maxlength="30" />
+        <label for="ccName">Card Name</label>
+        <input type="text" id="ccName" placeholder="e.g. HDFC Black" maxlength="30" />
       </div>
       <div class="form-group">
-        <label>Pick an Emoji</label>
-        <div class="emoji-picker" id="emojiPicker"></div>
+        <label for="ccLimit">Credit Limit (₹)</label>
+        <input type="number" id="ccLimit" placeholder="50000" min="0" step="1000" />
+      </div>
+      <div class="form-group">
+        <label for="ccDue">Current Due Amount (₹)</label>
+        <input type="number" id="ccDue" placeholder="0" min="0" step="0.01" />
       </div>
       <div class="modal-actions">
-        <button class="btn-cancel" id="cancelCatModal">Cancel</button>
-        <button class="btn-save" id="saveCatModal">Add</button>
+        <button class="btn-cancel" id="cancelCCModal">Cancel</button>
+        <button class="btn-save" id="saveCreditCard">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Personal Loan Modal -->
+  <div class="modal-overlay" id="personalLoanModal" aria-modal="true" role="dialog" aria-label="Add Personal Loan">
+    <div class="modal-sheet modal-sheet-sm">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title">Add Personal Loan</h2>
+      <div class="form-group">
+        <label for="plName">Loan Name</label>
+        <input type="text" id="plName" placeholder="e.g. Bank Loan" maxlength="30" />
+      </div>
+      <div class="form-group">
+        <label for="plTotal">Total Loan Amount (₹)</label>
+        <input type="number" id="plTotal" placeholder="500000" min="0" step="1000" />
+      </div>
+      <div class="form-group">
+        <label for="plDue">Current Outstanding (₹)</label>
+        <input type="number" id="plDue" placeholder="0" min="0" step="0.01" />
+      </div>
+      <div class="form-group">
+        <label for="plRate">Interest Rate (% p.a.)</label>
+        <input type="number" id="plRate" placeholder="8.5" min="0" step="0.1" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="cancelPLModal">Cancel</button>
+        <button class="btn-save" id="savePersonalLoan">Add</button>
       </div>
     </div>
   </div>
