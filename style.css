@@ -17,6 +17,10 @@
   --accent: #7c6ef8;
   --accent2: #a78bfa;
   --gold: #fbbf24;
+  --credit: #3b82f6;
+  --credit-dim: rgba(59,130,246,0.15);
+  --loan: #f59e0b;
+  --loan-dim: rgba(245,158,11,0.15);
 
   --text: #f0f0ff;
   --text2: rgba(240,240,255,0.6);
@@ -190,8 +194,6 @@ html, body {
 .export-btn:active { transform: scale(0.95); opacity: 0.85; }
 .export-btn:hover { background: linear-gradient(135deg, #166534, #15803d); }
 
-
-
 /* ===== BOTTOM NAV ===== */
 .bottom-nav {
   position: absolute; bottom: 0; left: 0; right: 0;
@@ -329,7 +331,6 @@ html, body {
   font-size: 10px; opacity: 0.7; flex-shrink: 0;
 }
 
-
 .tx-right { text-align: right; flex-shrink: 0; }
 .tx-amount { font-size: 15px; font-weight: 700; }
 .tx-item.income .tx-amount { color: var(--income); }
@@ -358,6 +359,64 @@ html, body {
   background: linear-gradient(135deg, var(--accent), #c084fc);
   border-color: transparent; color: #fff;
   box-shadow: var(--glow-accent);
+}
+
+/* ===== CREDIT CARDS & LOANS ===== */
+.credits-section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px; margin-bottom: 16px;
+}
+.credits-section h3 { font-size: 15px; font-weight: 700; color: var(--text); }
+
+.credit-card-list { display: flex; flex-direction: column; gap: 10px; }
+
+.credit-card-item {
+  background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(59,130,246,0.05));
+  border: 1px solid rgba(59,130,246,0.2);
+  border-radius: var(--radius-sm); padding: 14px;
+  transition: all 0.2s;
+}
+.credit-card-item.loan {
+  background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05));
+  border-color: rgba(245,158,11,0.2);
+}
+
+.credit-card-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+}
+.credit-card-header h4 {
+  font-size: 14px; font-weight: 700; color: var(--text);
+}
+.cc-delete {
+  width: 24px; height: 24px; border-radius: 6px;
+  background: rgba(255,79,123,0.1); border: 1px solid rgba(255,79,123,0.2);
+  color: var(--expense); font-size: 12px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; -webkit-tap-highlight-color: transparent; transition: all 0.2s;
+}
+.cc-delete:active { background: var(--expense); color: #fff; }
+
+.credit-card-details {
+  display: flex; flex-direction: column; gap: 8px; font-size: 12px;
+}
+.cc-detail-row {
+  display: flex; justify-content: space-between; align-items: center;
+  color: var(--text2);
+}
+.cc-label { font-weight: 500; }
+.cc-value { font-weight: 700; color: var(--text); }
+.cc-value.credit { color: var(--credit); }
+.cc-value.loan { color: var(--loan); }
+
+.cc-progress {
+  width: 100%; height: 6px; background: var(--surface2);
+  border-radius: 3px; overflow: hidden; margin-top: 6px;
+}
+.cc-progress-bar {
+  height: 100%; background: linear-gradient(90deg, var(--credit), var(--accent));
+  transition: width 0.3s;
+}
+.cc-progress-bar.loan {
+  background: linear-gradient(90deg, var(--loan), var(--gold));
 }
 
 /* ===== CATEGORIES PAGE ===== */
@@ -503,8 +562,6 @@ html, body {
 .char-counter.warn { color: var(--gold); }
 .char-counter.over  { color: var(--expense); }
 
-
-
 select option { background: #1a1a3e; color: var(--text); }
 input[type="date"] { color-scheme: dark; }
 input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
@@ -575,6 +632,7 @@ input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
 }
 .tx-item { animation: fadeIn 0.3s ease forwards; }
 .cat-item { animation: fadeIn 0.3s ease forwards; }
+.credit-card-item { animation: fadeIn 0.3s ease forwards; }
 
 /* ===== RESPONSIVE ADJUSTMENTS ===== */
 @media (max-width: 360px) {
